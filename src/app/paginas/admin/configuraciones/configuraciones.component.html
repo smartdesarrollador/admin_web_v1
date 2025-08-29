@@ -1,0 +1,292 @@
+<div class="container mx-auto px-4 py-6" appHasRole="administrador">
+  <h1 class="text-2xl font-bold mb-6">Configuración del Sistema</h1>
+
+  <!-- Estado de carga y mensajes -->
+  <div *ngIf="loading" class="mb-4">
+    <div class="flex items-center justify-center p-4 bg-blue-50 rounded">
+      <svg
+        class="animate-spin h-5 w-5 mr-3 text-blue-600"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      <span>Cargando configuraciones...</span>
+    </div>
+  </div>
+
+  <div
+    *ngIf="error"
+    class="mb-4 p-4 bg-red-50 text-red-600 rounded border border-red-200"
+  >
+    {{ error }}
+  </div>
+
+  <div
+    *ngIf="successMessage"
+    class="mb-4 p-4 bg-green-50 text-green-600 rounded border border-green-200"
+  >
+    {{ successMessage }}
+  </div>
+
+  <!-- Contenido principal -->
+  <div
+    *ngIf="configuracionesPorGrupo && !loading"
+    class="grid grid-cols-12 gap-6"
+  >
+    <!-- Menú lateral de grupos -->
+    <div class="col-span-12 md:col-span-3">
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="font-semibold text-lg mb-4">Categorías</h2>
+        <ul class="space-y-2">
+          <li *ngFor="let grupo of configuracionesPorGrupo.grupos">
+            <button
+              (click)="seleccionarGrupo(grupo)"
+              class="w-full text-left py-2 px-3 rounded transition-colors"
+              [ngClass]="
+                grupoSeleccionado === grupo
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'hover:bg-gray-100'
+              "
+            >
+              {{ grupo | titlecase }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Panel de configuraciones -->
+    <div class="col-span-12 md:col-span-9">
+      <div class="bg-white rounded-lg shadow">
+        <!-- Encabezado del panel -->
+        <div class="p-4 border-b">
+          <h2 class="font-semibold text-lg">
+            Configuraciones de {{ grupoSeleccionado | titlecase }}
+          </h2>
+        </div>
+
+        <!-- Formulario de edición de grupo -->
+        <form
+          *ngIf="formConfiguracionesGrupo[grupoSeleccionado]"
+          [formGroup]="formConfiguracionesGrupo[grupoSeleccionado]"
+          (ngSubmit)="guardarGrupo(grupoSeleccionado)"
+          class="p-4"
+        >
+          <div class="space-y-4">
+            <!-- Listado de configuraciones del grupo -->
+            <div
+              *ngFor="
+                let config of configuracionesPorGrupo.configuraciones[
+                  grupoSeleccionado
+                ]
+              "
+              class="border-b pb-4 last:border-b-0"
+            >
+              <div class="flex flex-col md:flex-row md:items-center mb-1">
+                <label
+                  [for]="'config_' + config.id"
+                  class="font-medium text-gray-700 md:w-1/3"
+                >
+                  {{ config.descripcion }}
+                </label>
+
+                <!-- Configuración tipo imagen -->
+                <div
+                  *ngIf="esImagen(config.tipo)"
+                  class="md:w-2/3 mt-2 md:mt-0"
+                >
+                  <div class="flex items-center space-x-4">
+                    <!-- Vista previa de la imagen actual -->
+                    <div
+                      *ngIf="config.valor"
+                      class="relative w-24 h-24 border rounded overflow-hidden"
+                    >
+                      <img
+                        [src]="getImagenUrl(config.clave)"
+                        alt="Vista previa"
+                        class="w-full h-full object-contain"
+                        *ngIf="getImagenUrl(config.clave)"
+                      />
+                      <div
+                        *ngIf="!getImagenUrl(config.clave)"
+                        class="w-full h-full flex items-center justify-center bg-gray-100"
+                      >
+                        <span class="text-xs text-gray-500">Cargando...</span>
+                      </div>
+                    </div>
+
+                    <!-- Selector de archivos y vista previa de la nueva imagen -->
+                    <div class="flex flex-col space-y-2">
+                      <input
+                        type="file"
+                        [id]="'file_' + config.id"
+                        class="hidden"
+                        accept="image/*"
+                        (change)="onArchivoSeleccionado($event, config.id)"
+                        #fileInput
+                      />
+                      <label
+                        [for]="'file_' + config.id"
+                        class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded inline-block"
+                      >
+                        Cambiar imagen
+                      </label>
+
+                      <!-- Vista previa de la nueva imagen seleccionada -->
+                      <div
+                        *ngIf="imagenPreview && editandoId === config.id"
+                        class="mt-2"
+                      >
+                        <div class="bg-gray-50 p-2 rounded border text-sm">
+                          <div
+                            *ngIf="imagenPreview.src"
+                            class="flex flex-col items-center"
+                          >
+                            <img
+                              [src]="imagenPreview.src"
+                              alt="Vista previa nueva"
+                              class="max-h-24 max-w-full mb-1 object-contain"
+                            />
+                            <span
+                              class="text-xs text-gray-600 truncate max-w-full"
+                              >{{ imagenPreview.nombre }}</span
+                            >
+                          </div>
+                          <div
+                            *ngIf="!imagenPreview.src && imagenPreview.nombre"
+                            class="flex items-center"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4 mr-1 text-blue-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            <span class="text-xs text-gray-600 truncate">{{
+                              imagenPreview.nombre
+                            }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Configuración tipo color -->
+                <div
+                  *ngIf="esColor(config.tipo)"
+                  class="md:w-2/3 mt-2 md:mt-0 flex items-center space-x-2"
+                >
+                  <input
+                    type="color"
+                    [id]="'config_' + config.id"
+                    [formControlName]="'config_' + config.id"
+                    class="w-12 h-8 rounded border"
+                  />
+                  <input
+                    type="text"
+                    [formControlName]="'config_' + config.id"
+                    class="flex-1 border rounded py-2 px-3"
+                  />
+                </div>
+
+                <!-- Configuración tipo texto, número o booleano -->
+                <div
+                  *ngIf="!esImagen(config.tipo) && !esColor(config.tipo)"
+                  class="md:w-2/3 mt-2 md:mt-0"
+                >
+                  <!-- Checkbox para booleanos -->
+                  <div
+                    *ngIf="config.tipo === 'booleano'"
+                    class="flex items-center"
+                  >
+                    <input
+                      type="checkbox"
+                      [id]="'config_' + config.id"
+                      [formControlName]="'config_' + config.id"
+                      [value]="'1'"
+                      class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <label
+                      [for]="'config_' + config.id"
+                      class="ml-2 text-gray-700"
+                    >
+                      Activar
+                    </label>
+                  </div>
+
+                  <!-- Input para números -->
+                  <input
+                    *ngIf="config.tipo === 'numero'"
+                    type="number"
+                    [id]="'config_' + config.id"
+                    [formControlName]="'config_' + config.id"
+                    class="w-full border rounded py-2 px-3"
+                  />
+
+                  <!-- Textarea para JSON -->
+                  <textarea
+                    *ngIf="config.tipo === 'json'"
+                    [id]="'config_' + config.id"
+                    [formControlName]="'config_' + config.id"
+                    rows="4"
+                    class="w-full border rounded py-2 px-3"
+                  ></textarea>
+
+                  <!-- Input para texto normal -->
+                  <input
+                    *ngIf="config.tipo === 'texto'"
+                    type="text"
+                    [id]="'config_' + config.id"
+                    [formControlName]="'config_' + config.id"
+                    class="w-full border rounded py-2 px-3"
+                  />
+                </div>
+              </div>
+
+              <!-- Texto de ayuda -->
+              <p class="text-xs text-gray-500 ml-0 md:ml-1/3 mt-1">
+                Clave: {{ config.clave }} | Tipo: {{ config.tipo }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="mt-6 flex justify-end">
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+              [disabled]="
+                loading || formConfiguracionesGrupo[grupoSeleccionado].invalid
+              "
+            >
+              Guardar configuraciones
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

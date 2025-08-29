@@ -1,0 +1,106 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Reglas para trabajar de manera experta en proyectos Angular utilizando Tailwind CSS y TypeScript.
+globs: ["**/*.ts", "**/*.html"]
+alwaysApply: true
+---
+
+# Principios Clave
+
+- Proporciona ejemplos claros y precisos en Angular y TypeScript.
+- Aplica inmutabilidad y funciones puras donde sea aplicable.
+- Favorece la composición de componentes para una mejor modularidad.
+- Utiliza nombres de variables significativos (por ejemplo, `isActive`, `hasPermission`).
+- Usa kebab-case para los nombres de archivos (por ejemplo, `user-profile.component.ts`).
+- Prefiere las exportaciones nombradas para componentes, servicios y utilidades.
+
+# TypeScript y Angular
+
+- Define las estructuras de datos utilizando interfaces para asegurar el tipado.
+- Evita el uso del tipo `any`, utiliza el sistema de tipos completamente.
+- Organiza los archivos: primero imports, luego definición y luego implementación.
+- Usa template strings para literales de múltiples líneas.
+- Utiliza encadenamiento opcional (`?.`) y nullish coalescing (`??`) cuando sea necesario.
+- Usa componentes standalone cuando sea aplicable.
+- Aprovecha el sistema de señales (`signals`) de Angular para la gestión eficiente del estado y programación reactiva.
+- Utiliza la función `inject` para inyectar servicios directamente en componentes, directivas o servicios, mejorando la claridad y reduciendo el código repetitivo.
+
+# Convenciones de Nombres de Archivos
+
+- `*.component.ts` para Componentes.
+- `*.service.ts` para Servicios.
+- `*.module.ts` para Módulos.
+- `*.directive.ts` para Directivas.
+- `*.pipe.ts` para Pipes.
+- `*.spec.ts` para Tests.
+- Todos los archivos deben usar kebab-case.
+
+# Estilo de Código
+
+- Utiliza comillas simples `'` para literales de cadenas.
+- Indenta el código utilizando 2 espacios.
+- Mantén el código limpio sin espacios en blanco al final de las líneas.
+- Usa `const` para variables inmutables.
+- Utiliza template strings para interpolación de cadenas.
+
+# Guías Específicas de Angular
+
+- Usa el async pipe para manejar observables en plantillas.
+- Implementa carga diferida (lazy loading) para módulos de características.
+- Asegura la accesibilidad utilizando HTML semántico y etiquetas ARIA.
+- Utiliza vistas diferibles (deferrable views) para optimizar el renderizado de componentes, aplazando vistas no críticas.
+- Incorpora el sistema de señales (`signals`) de Angular para mejorar la programación reactiva y la gestión del estado.
+- Utiliza la directiva `NgOptimizedImage` para optimizar la carga de imágenes y mejorar el rendimiento.
+
+# Orden de Importaciones
+
+1. Módulos de Angular core y common.
+2. Módulos de RxJS.
+3. Otros módulos de Angular.
+4. Importaciones del núcleo de la aplicación.
+5. Importaciones de módulos compartidos.
+6. Importaciones específicas del entorno.
+7. Importaciones relativas (rutas relativas).
+
+# Manejo de Errores y Validaciones
+
+- Utiliza manejo adecuado de errores en servicios y componentes.
+- Emplea tipos de errores personalizados o fábricas de errores.
+- Implementa validaciones de formularios de Angular o validadores personalizados.
+
+# Pruebas
+
+- Sigue el patrón Arrange-Act-Assert (Organizar-Actuar-Afirmar) en los tests.
+
+# Optimización de Rendimiento
+
+- Optimiza `ngFor` utilizando funciones `trackBy`.
+- Usa pipes puros para cálculos costosos.
+- Evita manipular directamente el DOM; utiliza el sistema de plantillas de Angular.
+- Optimiza el rendimiento del renderizado aplazando vistas no esenciales.
+- Utiliza el sistema de señales de Angular para gestionar el estado y reducir renders innecesarios.
+- Utiliza la directiva `NgOptimizedImage` para mejorar la carga y rendimiento de imágenes.
+
+# Seguridad
+
+- Previene ataques XSS usando la sanitización de Angular; evita el uso directo de `innerHTML`.
+- Sana el contenido dinámico utilizando las herramientas integradas de Angular.
+
+# Convenciones Clave
+
+- Usa el sistema de inyección de dependencias (DI) de Angular y la función `inject`.
+- Prioriza la reutilización y la modularidad del código.
+- Sigue la guía oficial de estilo de Angular.
+- Aplica siempre las mejores prácticas recomendadas por Angular.
+- Optimiza considerando métricas Web Vitals como LCP, INP y CLS.
+
+# Referencia
+
+Consulta siempre la documentación oficial de Angular para mejores prácticas en Componentes, Servicios y Módulos.
+
+---
+

@@ -1,0 +1,106 @@
+@import "ngx-toastr/toastr";
+/* @import "~animate.css/animate.min.css"; */
+
+/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "~quill/dist/quill.bubble.css";
+@import "~quill/dist/quill.snow.css";
+
+body {
+  /* background-color: #c6d8e7; */
+  background-color: #ecf0f1;
+}
+
+@layer components {
+  .boton-naranja {
+    @apply text-naranja bg-naranja_claro hover:bg-naranja hover:text-white focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-10 py-2.5 mr-2 mb-2 focus:outline-none;
+  }
+
+  .boton-verde {
+    @apply text-verde bg-verde_claro hover:bg-verde hover:text-white focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-10 py-2.5 mr-2 mb-2 focus:outline-none;
+  }
+
+  .boton-azul {
+    @apply text-azul bg-azul_claro hover:bg-azul hover:text-white focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-10 py-2.5 mr-2 mb-2 focus:outline-none;
+  }
+
+  .boton-rojo {
+    @apply text-rojo bg-rojo_claro hover:bg-rojo hover:text-white focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-10 py-2.5 mr-2 mb-2 focus:outline-none;
+  }
+
+  .titulo {
+    @apply text-2xl font-bold;
+  }
+
+  .subtitulo {
+    @apply text-xl font-bold;
+  }
+
+  .texto {
+    @apply text-base font-normal;
+  }
+
+  .titulo-azul {
+    @apply text-2xl font-bold text-azul;
+  }
+
+  .subtitulo-azul {
+    @apply text-xl font-bold text-azul;
+  }
+
+  .texto-azul {
+    @apply text-base font-normal text-azul;
+  }
+
+  .titulo-naranja {
+    @apply text-2xl font-bold text-naranja;
+  }
+
+  .subtitulo-naranja {
+    @apply text-xl font-bold text-naranja;
+  }
+
+  .texto-naranja {
+    @apply text-base font-normal text-naranja;
+  }
+
+  .titulo-gris {
+    @apply text-2xl font-bold text-gray-400;
+  }
+
+  .subtitulo-gris {
+    @apply text-xl font-bold text-gray-400;
+  }
+
+  .texto-gris {
+    @apply text-base font-normal text-gray-400;
+  }
+
+  .titulo-rojo {
+    @apply text-2xl font-bold text-rojo;
+  }
+
+  .subtitulo-rojo {
+    @apply text-xl font-bold text-rojo;
+  }
+
+  .texto-rojo {
+    @apply text-base font-normal text-rojo;
+  }
+
+  .alerta-rojo {
+    @apply p-4 mb-4 text-sm text-rojo rounded-lg bg-red-50;
+  }
+}
+
+@layer utilities {
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}

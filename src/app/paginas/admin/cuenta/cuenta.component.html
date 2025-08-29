@@ -1,0 +1,332 @@
+<div class="max-w-6xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">Configuración de Cuenta</h1>
+
+  <!-- Mensaje de éxito/error general -->
+  <div
+    *ngIf="successMessage()"
+    class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+  >
+    <span class="block sm:inline">{{ successMessage() }}</span>
+  </div>
+  <div
+    *ngIf="errorMessage()"
+    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+  >
+    <span class="block sm:inline">{{ errorMessage() }}</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Imagen de perfil - Columna 1 -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Imagen de perfil</h2>
+
+      <div class="flex flex-col items-center">
+        <!-- Previsualización de imagen -->
+        <div class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden mb-4">
+          <img
+            [src]="previewUrl"
+            alt="Foto de perfil"
+            class="w-full h-full object-cover"
+          />
+        </div>
+
+        <!-- Botón para seleccionar archivo -->
+        <label
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer mb-2"
+        >
+          <span>Seleccionar imagen</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/jpg,image/png"
+            class="hidden"
+            (change)="onFileSelected($event)"
+          />
+        </label>
+
+        <p class="text-sm text-gray-500 mb-4">JPG o PNG. Máximo 2MB.</p>
+
+        <!-- Botón para subir imagen -->
+        <button
+          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300 w-full"
+          [disabled]="!selectedFile || isLoading()"
+          (click)="uploadImage()"
+        >
+          <span
+            *ngIf="isLoading() && selectedFile"
+            class="material-icons animate-spin mr-1"
+            >refresh</span
+          >
+          <span>Subir imagen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Información de perfil - Columna 2 -->
+    <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">
+        Información de perfil
+      </h2>
+
+      <form
+        [formGroup]="profileForm"
+        (ngSubmit)="updateProfile()"
+        class="space-y-4"
+      >
+        <!-- Nombre -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1"
+            >Nombre</label
+          >
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            [class.border-red-500]="
+              profileForm.get('name')?.invalid &&
+              profileForm.get('name')?.touched
+            "
+          />
+          <p
+            *ngIf="
+              profileForm.get('name')?.invalid &&
+              profileForm.get('name')?.touched
+            "
+            class="mt-1 text-sm text-red-600"
+          >
+            El nombre es obligatorio
+          </p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label
+            for="email"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Correo electrónico</label
+          >
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            [class.border-red-500]="
+              profileForm.get('email')?.invalid &&
+              profileForm.get('email')?.touched
+            "
+          />
+          <p
+            *ngIf="
+              profileForm.get('email')?.invalid &&
+              profileForm.get('email')?.touched
+            "
+            class="mt-1 text-sm text-red-600"
+          >
+            Introduce un correo electrónico válido
+          </p>
+        </div>
+
+        <!-- Rol - Solo visible para administradores -->
+        <div *ngIf="isAdmin()">
+          <label for="rol" class="block text-sm font-medium text-gray-700 mb-1"
+            >Rol</label
+          >
+          <select
+            id="rol"
+            formControlName="rol"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="autor">Autor</option>
+            <option value="administrador">Administrador</option>
+          </select>
+        </div>
+
+        <!-- Campo oculto para usuarios no administradores -->
+        <div *ngIf="!isAdmin()" class="hidden">
+          <input type="hidden" formControlName="rol" />
+        </div>
+
+        <!-- Botón guardar -->
+        <div class="flex justify-end">
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+            [disabled]="profileForm.invalid || isLoading()"
+          >
+            <span *ngIf="isLoading()" class="material-icons animate-spin mr-1"
+              >refresh</span
+            >
+            <span>Guardar cambios</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Cambio de contraseña - Abajo -->
+    <div class="bg-white rounded-lg shadow-md p-6 md:col-span-3">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">
+        Cambiar contraseña
+      </h2>
+
+      <form
+        [formGroup]="passwordForm"
+        (ngSubmit)="updatePassword()"
+        class="space-y-4"
+      >
+        <!-- Contraseña actual -->
+        <div>
+          <label
+            for="current_password"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Contraseña actual</label
+          >
+          <div class="relative">
+            <input
+              [type]="showCurrentPassword() ? 'text' : 'password'"
+              id="current_password"
+              formControlName="current_password"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 pr-10"
+              [class.border-red-500]="
+                passwordForm.get('current_password')?.invalid &&
+                passwordForm.get('current_password')?.touched
+              "
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+              (click)="togglePasswordVisibility('current')"
+            >
+              <span class="material-icons text-gray-500">
+                {{ showCurrentPassword() ? "visibility_off" : "visibility" }}
+              </span>
+            </button>
+          </div>
+          <p
+            *ngIf="
+              passwordForm.get('current_password')?.invalid &&
+              passwordForm.get('current_password')?.touched
+            "
+            class="mt-1 text-sm text-red-600"
+          >
+            La contraseña actual es obligatoria
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Nueva contraseña -->
+          <div>
+            <label
+              for="password"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Nueva contraseña</label
+            >
+            <div class="relative">
+              <input
+                [type]="showNewPassword() ? 'text' : 'password'"
+                id="password"
+                formControlName="password"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 pr-10"
+                [class.border-red-500]="
+                  passwordForm.get('password')?.invalid &&
+                  passwordForm.get('password')?.touched
+                "
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+                (click)="togglePasswordVisibility('new')"
+              >
+                <span class="material-icons text-gray-500">
+                  {{ showNewPassword() ? "visibility_off" : "visibility" }}
+                </span>
+              </button>
+            </div>
+            <p
+              *ngIf="
+                passwordForm.get('password')?.hasError('required') &&
+                passwordForm.get('password')?.touched
+              "
+              class="mt-1 text-sm text-red-600"
+            >
+              La nueva contraseña es obligatoria
+            </p>
+            <p
+              *ngIf="
+                passwordForm.get('password')?.hasError('minlength') &&
+                passwordForm.get('password')?.touched
+              "
+              class="mt-1 text-sm text-red-600"
+            >
+              La contraseña debe tener al menos 8 caracteres
+            </p>
+          </div>
+
+          <!-- Confirmar contraseña -->
+          <div>
+            <label
+              for="password_confirmation"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Confirmar contraseña</label
+            >
+            <div class="relative">
+              <input
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                id="password_confirmation"
+                formControlName="password_confirmation"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 pr-10"
+                [class.border-red-500]="
+                  (passwordForm.get('password_confirmation')?.invalid &&
+                    passwordForm.get('password_confirmation')?.touched) ||
+                  passwordForm.hasError('mismatch')
+                "
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+                (click)="togglePasswordVisibility('confirm')"
+              >
+                <span class="material-icons text-gray-500">
+                  {{ showConfirmPassword() ? "visibility_off" : "visibility" }}
+                </span>
+              </button>
+            </div>
+            <p
+              *ngIf="
+                passwordForm
+                  .get('password_confirmation')
+                  ?.hasError('required') &&
+                passwordForm.get('password_confirmation')?.touched
+              "
+              class="mt-1 text-sm text-red-600"
+            >
+              Confirma tu contraseña
+            </p>
+            <p
+              *ngIf="
+                passwordForm.hasError('mismatch') &&
+                passwordForm.get('password_confirmation')?.touched
+              "
+              class="mt-1 text-sm text-red-600"
+            >
+              Las contraseñas no coinciden
+            </p>
+          </div>
+        </div>
+
+        <!-- Botón cambiar contraseña -->
+        <div class="flex justify-end">
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+            [disabled]="passwordForm.invalid || isLoading()"
+          >
+            <span *ngIf="isLoading()" class="material-icons animate-spin mr-1"
+              >refresh</span
+            >
+            <span>Cambiar contraseña</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

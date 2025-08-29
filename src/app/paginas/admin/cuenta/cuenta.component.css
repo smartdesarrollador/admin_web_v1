@@ -1,0 +1,36 @@
+/* Estilos adicionales específicos para el componente de cuenta */
+
+/* Estilos para el spinner de carga */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Estilos para hover en botones */
+button:not(:disabled):hover,
+label:hover {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Estilos para el contenedor de imagen de perfil */
+.rounded-full {
+  border: 2px solid #e2e8f0;
+}
+
+/* Estilo para mensajes de error de validación */
+.text-red-600 {
+  font-size: 0.875rem;
+}
+
+/* Estilo para campos inválidos */
+.border-red-500:focus {
+  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.2);
+}

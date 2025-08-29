@@ -1,0 +1,329 @@
+<div class="container mx-auto px-4 py-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Gestión de Usuarios</h1>
+    <a
+      routerLink="/admin/register"
+      class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center"
+      appHasRole="administrador"
+    >
+      <span class="material-icons mr-1">person_add</span>
+      <span>Nuevo Usuario</span>
+    </a>
+  </div>
+
+  <!-- Filtros y búsqueda -->
+  <div class="bg-white rounded-lg shadow p-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Buscador -->
+      <div class="relative">
+        <span
+          class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"
+        >
+          <span class="material-icons text-sm">search</span>
+        </span>
+        <input
+          type="text"
+          [formControl]="searchControl"
+          placeholder="Buscar por nombre o email..."
+          class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <!-- Filtro por rol -->
+      <div>
+        <select
+          [formControl]="rolControl"
+          class="w-full py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Todos los roles</option>
+          <option *ngFor="let rol of roles" [value]="rol">
+            {{ rol }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Botón para limpiar filtros -->
+      <div class="flex items-center">
+        <button
+          (click)="limpiarFiltros()"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded flex items-center"
+        >
+          <span class="material-icons mr-1 text-sm">clear</span>
+          <span>Limpiar filtros</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje de carga -->
+  <div *ngIf="loading()" class="flex justify-center items-center p-8">
+    <div class="flex items-center">
+      <svg
+        class="animate-spin h-5 w-5 mr-3 text-blue-600"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      <span>Cargando usuarios...</span>
+    </div>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div
+    *ngIf="error()"
+    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+  >
+    <p>{{ error() }}</p>
+    <button
+      (click)="actualizarFiltros(filters())"
+      class="mt-2 bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
+    >
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Tabla de usuarios -->
+  <div
+    *ngIf="!loading() && !error() && usuarios().length > 0"
+    class="bg-white rounded-lg shadow overflow-hidden"
+  >
+    <div class="table-container">
+      <table class="user-table">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="w-14">#</th>
+            <th class="w-14">Avatar</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Fecha Creación</th>
+            <th class="w-24">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr *ngFor="let usuario of usuarios()" class="hover:bg-gray-50">
+            <td>{{ usuario.id }}</td>
+            <td>
+              <div class="user-avatar-container">
+                <img
+                  [src]="getProfileImageUrl(usuario)"
+                  alt="Avatar de {{ usuario.name }}"
+                  class="user-avatar"
+                  (error)="onImageError($event)"
+                  loading="lazy"
+                />
+              </div>
+            </td>
+            <td>{{ usuario.name }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>
+              <span
+                class="badge-role"
+                [ngClass]="{
+                  'badge-admin': usuario.rol === 'administrador',
+                  'badge-autor': usuario.rol === 'autor',
+                  'badge-cliente': usuario.rol === 'cliente'
+                }"
+              >
+                {{ usuario.rol }}
+              </span>
+            </td>
+            <td>{{ usuario.created_at | date : "dd/MM/yyyy" }}</td>
+            <td>
+              <div class="flex space-x-1">
+                <button
+                  class="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                  [routerLink]="['/admin/usuarios/editar', usuario.id]"
+                  title="Editar"
+                  appHasRole="administrador"
+                >
+                  <span class="material-icons text-sm">edit</span>
+                </button>
+                <button
+                  class="p-1 text-red-600 hover:bg-red-100 rounded"
+                  (click)="confirmarEliminar(usuario.id)"
+                  title="Eliminar"
+                  appHasRole="administrador"
+                >
+                  <span class="material-icons text-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div
+      *ngIf="pagination()"
+      class="px-4 py-3 flex items-center justify-between border-t border-gray-200"
+    >
+      <div class="flex-1 flex justify-between sm:hidden">
+        <button
+          (click)="irAPagina((pagination()?.current_page || 1) - 1)"
+          [disabled]="(pagination()?.current_page || 0) <= 1"
+          [ngClass]="{
+            'opacity-50 cursor-not-allowed':
+              (pagination()?.current_page || 0) <= 1
+          }"
+          class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+        >
+          Anterior
+        </button>
+        <button
+          (click)="irAPagina((pagination()?.current_page || 1) + 1)"
+          [disabled]="
+            (pagination()?.current_page || 0) >= (pagination()?.last_page || 0)
+          "
+          [ngClass]="{
+            'opacity-50 cursor-not-allowed':
+              (pagination()?.current_page || 0) >=
+              (pagination()?.last_page || 0)
+          }"
+          class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+        >
+          Siguiente
+        </button>
+      </div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Mostrando
+            <span class="font-medium">{{ pagination()?.from || 0 }}</span>
+            a
+            <span class="font-medium">{{ pagination()?.to || 0 }}</span>
+            de
+            <span class="font-medium">{{ pagination()?.total || 0 }}</span>
+            resultados
+          </p>
+        </div>
+        <div>
+          <nav
+            class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+            aria-label="Pagination"
+          >
+            <!-- Botón anterior -->
+            <button
+              (click)="irAPagina((pagination()?.current_page || 1) - 1)"
+              [disabled]="(pagination()?.current_page || 0) <= 1"
+              [ngClass]="{
+                'opacity-50 cursor-not-allowed':
+                  (pagination()?.current_page || 0) <= 1
+              }"
+              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
+              <span class="sr-only">Anterior</span>
+              <span class="material-icons text-base">chevron_left</span>
+            </button>
+
+            <!-- Números de página -->
+            <ng-container *ngFor="let page of getPaginationRange()">
+              <!-- Elipsis -->
+              <span
+                *ngIf="page === -1"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+              >
+                ...
+              </span>
+
+              <!-- Botón de página normal -->
+              <button
+                *ngIf="page !== -1"
+                (click)="irAPagina(page)"
+                [ngClass]="{
+                  'bg-blue-50 border-blue-500 text-blue-600':
+                    (pagination()?.current_page || 0) === page,
+                  'bg-white text-gray-500':
+                    (pagination()?.current_page || 0) !== page
+                }"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium hover:bg-gray-50"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <!-- Botón siguiente -->
+            <button
+              (click)="irAPagina((pagination()?.current_page || 1) + 1)"
+              [disabled]="
+                (pagination()?.current_page || 0) >=
+                (pagination()?.last_page || 0)
+              "
+              [ngClass]="{
+                'opacity-50 cursor-not-allowed':
+                  (pagination()?.current_page || 0) >=
+                  (pagination()?.last_page || 0)
+              }"
+              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
+              <span class="sr-only">Siguiente</span>
+              <span class="material-icons text-base">chevron_right</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay usuarios -->
+  <div
+    *ngIf="!loading() && !error() && usuarios().length === 0"
+    class="bg-white rounded-lg shadow p-8 text-center"
+  >
+    <p class="text-gray-500">
+      No hay usuarios que coincidan con los criterios de búsqueda.
+    </p>
+    <button
+      (click)="limpiarFiltros()"
+      class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      <span class="material-icons mr-1 text-sm">refresh</span>
+      <span>Limpiar filtros</span>
+    </button>
+  </div>
+
+  <!-- Modal de confirmación de eliminación -->
+  <div *ngIf="usuarioAEliminar" class="modal-overlay">
+    <div class="modal-content">
+      <h3 class="text-lg font-medium mb-4">Confirmar eliminación</h3>
+      <p class="mb-6">
+        ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se
+        puede deshacer.
+      </p>
+      <div class="flex justify-end space-x-3">
+        <button
+          (click)="cancelarEliminar()"
+          class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+          [disabled]="loading()"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="eliminarUsuario()"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          [disabled]="loading()"
+        >
+          <span *ngIf="loading()" class="material-icons animate-spin mr-1"
+            >refresh</span
+          >
+          <span>Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

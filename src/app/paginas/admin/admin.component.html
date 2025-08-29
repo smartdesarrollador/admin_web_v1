@@ -1,0 +1,370 @@
+<!-- Layout principal -->
+<div class="flex h-screen bg-gray-100" (click)="closeAllDropdowns()">
+  <!-- Sidebar (visible en escritorio, oculto en móvil por default) -->
+  <aside
+    class="hidden md:flex md:flex-col w-64 bg-gray-800 text-white shadow-lg transition-all duration-300"
+    [class.hidden]="sidebarHidden"
+    [class.md:flex]="!sidebarHidden"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Logo y título -->
+    <div class="p-4 border-b border-gray-700">
+      <div class="flex items-center">
+        <div class="w-full h-full mr-3 overflow-hidden rounded">
+          <img
+            *ngIf="logoUrl | async as url"
+            [src]="url"
+            alt="Logo"
+            class="w-full h-full object-contain"
+          />
+        </div>
+        <!-- <h1 class="text-xl font-bold">Panel Admin</h1> -->
+      </div>
+    </div>
+
+    <!-- Menú lateral -->
+    <nav class="mt-4 flex flex-col">
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="bg-gray-900"
+        class="p-3 hover:bg-gray-700 transition-colors"
+        [ngStyle]="{ color: (colorPrimario | async) }"
+      >
+        <div class="flex items-center">
+          <span class="material-icons mr-3">dashboard</span>
+          <span>Dashboard</span>
+        </div>
+      </a>
+      <a
+        routerLink="/admin/usuarios"
+        routerLinkActive="bg-gray-900"
+        class="p-3 hover:bg-gray-700 transition-colors"
+        appHasRole="administrador"
+      >
+        <div class="flex items-center">
+          <span class="material-icons mr-3">people</span>
+          <span>Usuarios</span>
+        </div>
+      </a>
+
+      <a
+        routerLink="/admin/configuraciones"
+        routerLinkActive="bg-gray-900"
+        class="p-3 hover:bg-gray-700 transition-colors"
+        appHasRole="administrador"
+      >
+        <div class="flex items-center">
+          <span class="material-icons mr-3">settings</span>
+          <span>Configuración</span>
+        </div>
+      </a>
+      <a
+        routerLink="/admin/banners"
+        routerLinkActive="bg-gray-900"
+        class="p-3 hover:bg-gray-700 transition-colors"
+        appHasRole="administrador"
+      >
+        <div class="flex items-center">
+          <span class="material-icons mr-3">view_carousel</span>
+          <span>Banners</span>
+        </div>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Barra de navegación superior -->
+    <header class="bg-white shadow-sm" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-4">
+        <!-- Botón de menú para móvil -->
+        <button
+          (click)="toggleSidebar()"
+          class="md:hidden p-2 rounded-md hover:bg-gray-200 focus:outline-none"
+        >
+          <span class="material-icons">menu</span>
+        </button>
+
+        <!-- Botón alternador para escritorio -->
+        <button
+          (click)="toggleSidebar()"
+          class="hidden md:block p-2 rounded-md hover:bg-gray-200 focus:outline-none"
+        >
+          <span class="material-icons">{{
+            sidebarHidden ? "menu_open" : "menu"
+          }}</span>
+        </button>
+
+        <!-- Título de la página actual -->
+        <h2 class="text-lg font-semibold ml-2">Dashboard</h2>
+
+        <!-- Menú derecho (notificaciones, perfil, etc.) -->
+        <div class="flex items-center space-x-3">
+          <button class="p-2 rounded-full hover:bg-gray-200">
+            <span class="material-icons">notifications</span>
+          </button>
+
+          <!-- Botón de usuario con avatar -->
+          <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full overflow-hidden mr-2">
+              <img
+                *ngIf="userProfileImage"
+                [src]="userProfileImage"
+                alt="Perfil"
+                class="w-full h-full object-cover"
+              />
+              <span
+                *ngIf="!userProfileImage"
+                class="material-icons w-full h-full flex items-center justify-center bg-gray-200 text-gray-500"
+              >
+                account_circle
+              </span>
+            </div>
+            <div class="hidden md:block">
+              <span class="font-medium">{{
+                currentUser?.name || "Usuario"
+              }}</span>
+            </div>
+          </div>
+
+          <!-- Dropdown de configuración -->
+          <div class="relative">
+            <button
+              (click)="toggleConfigDropdown(); $event.stopPropagation()"
+              class="p-2 rounded-full hover:bg-gray-200 focus:outline-none"
+              [class.bg-gray-200]="configDropdownOpen"
+            >
+              <span class="material-icons">settings</span>
+            </button>
+
+            <!-- Menú desplegable de configuración -->
+            <div
+              *ngIf="configDropdownOpen"
+              class="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+              (click)="$event.stopPropagation()"
+            >
+              <a
+                routerLink="/admin/configuraciones"
+                class="px-4 py-2 flex items-center text-gray-700 hover:bg-gray-100 transition-colors"
+                appHasRole="administrador"
+              >
+                <span class="material-icons mr-3 text-gray-500">settings</span>
+                <span>Configuración</span>
+              </a>
+              <a
+                routerLink="/admin/cuenta"
+                class="px-4 py-2 flex items-center text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <span class="material-icons mr-3 text-gray-500">person</span>
+                <span>Cuenta</span>
+              </a>
+              <a
+                routerLink="/admin/register"
+                class="px-4 py-2 flex items-center text-gray-700 hover:bg-gray-100 transition-colors"
+                appHasRole="administrador"
+              >
+                <span class="material-icons mr-3 text-gray-500"
+                  >person_add</span
+                >
+                <span>Registrar</span>
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              <button
+                (click)="logout()"
+                class="w-full text-left px-4 py-2 flex items-center text-red-600 hover:bg-gray-100 transition-colors"
+              >
+                <span class="material-icons mr-3 text-red-500">logout</span>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Panel lateral móvil (visible solo en móvil cuando se abre) -->
+    <div
+      *ngIf="!sidebarHidden"
+      class="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
+      (click)="toggleSidebar()"
+    >
+      <div
+        class="w-64 h-full bg-gray-800 text-white shadow-lg"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Contenido del sidebar móvil -->
+        <div
+          class="p-4 border-b border-gray-700 flex justify-between items-center"
+        >
+          <div class="flex items-center">
+            <div class="w-full h-full mr-3 overflow-hidden rounded">
+              <img
+                *ngIf="logoUrl | async as url"
+                [src]="url"
+                alt="Logo"
+                class="w-full h-full object-contain"
+              />
+            </div>
+            <!-- <h1 class="text-xl font-bold">Panel Admin</h1> -->
+          </div>
+          <button (click)="toggleSidebar()" class="p-2">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <!-- Información del usuario en el sidebar móvil -->
+        <div class="p-4 border-b border-gray-700">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
+              <img
+                *ngIf="userProfileImage"
+                [src]="userProfileImage"
+                alt="Perfil"
+                class="w-full h-full object-cover"
+              />
+              <span
+                *ngIf="!userProfileImage"
+                class="material-icons w-full h-full flex items-center justify-center bg-gray-600 text-gray-300"
+              >
+                account_circle
+              </span>
+            </div>
+            <div>
+              <span class="font-medium">{{
+                currentUser?.name || "Usuario"
+              }}</span>
+              <p class="text-sm text-gray-400">
+                {{ currentUser?.rol || "Sin rol" }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menú lateral -->
+        <nav class="mt-4 flex flex-col">
+          <a
+            routerLink="/admin/dashboard"
+            routerLinkActive="bg-gray-900"
+            class="p-3 hover:bg-gray-700 transition-colors"
+          >
+            <div class="flex items-center">
+              <span class="material-icons mr-3">dashboard</span>
+              <span>Dashboard</span>
+            </div>
+          </a>
+          <a
+            routerLink="/admin/usuarios"
+            routerLinkActive="bg-gray-900"
+            class="p-3 hover:bg-gray-700 transition-colors"
+            appHasRole="administrador"
+          >
+            <div class="flex items-center">
+              <span class="material-icons mr-3">people</span>
+              <span>Usuarios</span>
+            </div>
+          </a>
+
+          <!-- Dropdown de Productos (móvil) -->
+          <div class="relative">
+            <!-- Encabezado del dropdown -->
+            <button
+              (click)="toggleProductosDropdown(); $event.stopPropagation()"
+              class="w-full p-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
+              [class.bg-gray-900]="productosDropdownOpen"
+            >
+              <div class="flex items-center">
+                <span class="material-icons mr-3">inventory</span>
+                <span>Productos</span>
+              </div>
+              <span class="material-icons text-sm">
+                {{
+                  productosDropdownOpen
+                    ? "keyboard_arrow_up"
+                    : "keyboard_arrow_down"
+                }}
+              </span>
+            </button>
+
+            <!-- Contenido del dropdown -->
+            <div
+              *ngIf="productosDropdownOpen"
+              class="bg-gray-700 py-1 overflow-hidden transition-all duration-300"
+            >
+              <a
+                routerLink="/admin/productos/listar"
+                routerLinkActive="bg-gray-600"
+                class="pl-10 pr-3 py-2 block hover:bg-gray-600 transition-colors"
+              >
+                <div class="flex items-center">
+                  <span class="material-icons mr-3 text-sm">list</span>
+                  <span>Listar</span>
+                </div>
+              </a>
+              <a
+                routerLink="/admin/productos/crear"
+                routerLinkActive="bg-gray-600"
+                class="pl-10 pr-3 py-2 block hover:bg-gray-600 transition-colors"
+              >
+                <div class="flex items-center">
+                  <span class="material-icons mr-3 text-sm">add</span>
+                  <span>Crear</span>
+                </div>
+              </a>
+              <a
+                routerLink="/admin/productos/editar"
+                routerLinkActive="bg-gray-600"
+                class="pl-10 pr-3 py-2 block hover:bg-gray-600 transition-colors"
+              >
+                <div class="flex items-center">
+                  <span class="material-icons mr-3 text-sm">edit</span>
+                  <span>Editar</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <a
+            routerLink="/admin/configuraciones"
+            routerLinkActive="bg-gray-900"
+            class="p-3 hover:bg-gray-700 transition-colors"
+            appHasRole="administrador"
+          >
+            <div class="flex items-center">
+              <span class="material-icons mr-3">settings</span>
+              <span>Configuración</span>
+            </div>
+          </a>
+
+          <!-- Opción de Registrar en el menú móvil -->
+          <a
+            routerLink="/admin/register"
+            routerLinkActive="bg-gray-900"
+            class="p-3 hover:bg-gray-700 transition-colors"
+            appHasRole="administrador"
+          >
+            <div class="flex items-center">
+              <span class="material-icons mr-3">person_add</span>
+              <span>Registrar</span>
+            </div>
+          </a>
+
+          <!-- Opción para cerrar sesión en el menú móvil -->
+          <button
+            (click)="logout()"
+            class="p-3 hover:bg-gray-700 transition-colors w-full text-left"
+          >
+            <div class="flex items-center">
+              <span class="material-icons mr-3 text-red-400">logout</span>
+              <span class="text-red-400">Cerrar sesión</span>
+            </div>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Área de contenido principal -->
+    <main class="flex-1 overflow-auto p-6 bg-gray-100">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

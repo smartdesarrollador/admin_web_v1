@@ -1,0 +1,297 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Crear Nuevo Banner</h1>
+      <button
+        type="button"
+        (click)="cancelar()"
+        class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md flex items-center transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        Volver
+      </button>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div
+      *ngIf="successMessage"
+      class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"
+    >
+      <div class="flex">
+        <svg
+          class="h-6 w-6 text-green-500 mr-3"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+        <span>{{ successMessage }}</span>
+      </div>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div
+      *ngIf="errorMessage"
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+    >
+      <div class="flex">
+        <svg
+          class="h-6 w-6 text-red-500 mr-3"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </div>
+
+    <form [formGroup]="bannerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Título -->
+      <div class="space-y-2">
+        <label for="titulo" class="block text-sm font-medium text-gray-700"
+          >Título <span class="text-red-500">*</span></label
+        >
+        <input
+          type="text"
+          id="titulo"
+          formControlName="titulo"
+          placeholder="Ingrese el título del banner"
+          class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{
+            'border-red-500': esInvalido('titulo'),
+            'border-gray-300': !esInvalido('titulo')
+          }"
+        />
+        <div *ngIf="esInvalido('titulo')" class="text-sm text-red-600 mt-1">
+          <p *ngFor="let error of obtenerErrores('titulo')">{{ error }}</p>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="space-y-2">
+        <label for="descripcion" class="block text-sm font-medium text-gray-700"
+          >Descripción</label
+        >
+        <textarea
+          id="descripcion"
+          formControlName="descripcion"
+          placeholder="Ingrese una descripción (opcional)"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        ></textarea>
+      </div>
+
+      <!-- Imagen -->
+      <div class="space-y-2">
+        <label for="imagen" class="block text-sm font-medium text-gray-700"
+          >Imagen <span class="text-red-500">*</span></label
+        >
+        <div class="flex items-center space-x-4">
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-md p-4 w-full flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+            (click)="fileInput.click()"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-10 w-10 text-gray-400 mb-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <p class="text-sm text-gray-500">
+              <span *ngIf="!imagenSeleccionada"
+                >Haga clic para seleccionar una imagen</span
+              >
+              <span *ngIf="imagenSeleccionada">{{
+                imagenSeleccionada.name
+              }}</span>
+            </p>
+            <input
+              #fileInput
+              type="file"
+              id="imagen"
+              accept="image/*"
+              class="hidden"
+              (change)="onFileChange($event)"
+            />
+          </div>
+
+          <!-- Vista previa de la imagen -->
+          <div
+            *ngIf="previewImagen"
+            class="h-24 w-36 border rounded-md overflow-hidden"
+          >
+            <img
+              [src]="previewImagen"
+              alt="Vista previa"
+              class="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Texto del botón -->
+      <div class="space-y-2">
+        <label for="texto_boton" class="block text-sm font-medium text-gray-700"
+          >Texto del botón <span class="text-red-500">*</span></label
+        >
+        <input
+          type="text"
+          id="texto_boton"
+          formControlName="texto_boton"
+          placeholder="Ej: Ver más, Comprar ahora"
+          class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{
+            'border-red-500': esInvalido('texto_boton'),
+            'border-gray-300': !esInvalido('texto_boton')
+          }"
+        />
+        <div
+          *ngIf="esInvalido('texto_boton')"
+          class="text-sm text-red-600 mt-1"
+        >
+          <p *ngFor="let error of obtenerErrores('texto_boton')">{{ error }}</p>
+        </div>
+      </div>
+
+      <!-- Enlace del botón -->
+      <div class="space-y-2">
+        <label
+          for="enlace_boton"
+          class="block text-sm font-medium text-gray-700"
+          >Enlace del botón <span class="text-red-500">*</span></label
+        >
+        <input
+          type="text"
+          id="enlace_boton"
+          formControlName="enlace_boton"
+          placeholder="https://ejemplo.com/pagina"
+          class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{
+            'border-red-500': esInvalido('enlace_boton'),
+            'border-gray-300': !esInvalido('enlace_boton')
+          }"
+        />
+        <div
+          *ngIf="esInvalido('enlace_boton')"
+          class="text-sm text-red-600 mt-1"
+        >
+          <p *ngFor="let error of obtenerErrores('enlace_boton')">
+            {{ error }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Orden -->
+      <div class="space-y-2">
+        <label for="orden" class="block text-sm font-medium text-gray-700"
+          >Orden <span class="text-red-500">*</span></label
+        >
+        <input
+          type="number"
+          id="orden"
+          formControlName="orden"
+          min="0"
+          class="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{
+            'border-red-500': esInvalido('orden'),
+            'border-gray-300': !esInvalido('orden')
+          }"
+        />
+        <div *ngIf="esInvalido('orden')" class="text-sm text-red-600 mt-1">
+          <p *ngFor="let error of obtenerErrores('orden')">{{ error }}</p>
+        </div>
+      </div>
+
+      <!-- Activo -->
+      <div class="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="activo"
+          formControlName="activo"
+          class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+        />
+        <label for="activo" class="text-sm font-medium text-gray-700"
+          >Banner activo</label
+        >
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          (click)="cancelar()"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md flex items-center transition-colors"
+          [disabled]="bannerForm.invalid || isLoading || !imagenSeleccionada"
+          [ngClass]="{
+            'opacity-50 cursor-not-allowed':
+              bannerForm.invalid || isLoading || !imagenSeleccionada
+          }"
+        >
+          <span *ngIf="isLoading" class="mr-2">
+            <svg
+              class="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </span>
+          {{ isLoading ? "Guardando..." : "Guardar Banner" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
